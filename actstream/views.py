@@ -24,7 +24,7 @@ def respond(request, code):
 
 @login_required
 @csrf_exempt
-def follow_unfollow(request, content_type_id, object_id, do_follow=True, actor_only=True):
+def follow_unfollow(request, content_type_id, object_id, do_follow=True, actor_only=True, send_action=False):
     """
     Creates or deletes the follow relationship between ``request.user`` and the
     actor defined by ``content_type_id``, ``object_id``.
@@ -33,9 +33,9 @@ def follow_unfollow(request, content_type_id, object_id, do_follow=True, actor_o
     instance = get_object_or_404(ctype.model_class(), pk=object_id)
 
     if do_follow:
-        actions.follow(request.user, instance, actor_only=actor_only)
+        actions.follow(request.user, instance, actor_only=actor_only, send_action=send_action)
         return respond(request, 201)   # CREATED
-    actions.unfollow(request.user, instance)
+    actions.unfollow(request.user, instance, send_action=send_action)
     return respond(request, 204)   # NO CONTENT
 
 
