@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from django.template import Variable, Library, Node, TemplateSyntaxError
 from django.template.loader import render_to_string
 
-from actstream.models import Follow, Action
+from actstream.models import Follow, Action, followers
 
 
 register = Library()
@@ -219,6 +219,22 @@ def followers_url(parser, token):
         return DisplayFollowersUrl(bits[1])
 
 
+class DisplayFollowersCount(Node):
+    def __init__(self, object):
+        self.object = Variable(object)
+
+    def render(self, context):
+        return len(followers(self.object.resolve(context)))
+
+
+def followers_count(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 2:
+        raise TemplateSyntaxError("Accepted format {% followers_count [object_instance] %}")
+    else:
+        return DisplayFollowersCount(bits[1])
+
+
 register.filter(activity_stream)
 register.filter(is_following)
 register.tag(display_action)
@@ -226,4 +242,5 @@ register.tag(follow_url)
 register.tag(follow_all_url)
 register.tag(actor_url)
 register.tag(followers_url)
+register.tag(followers_count)
 register.simple_tag(takes_context=True)(activity_stream)
