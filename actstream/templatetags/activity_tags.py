@@ -199,10 +199,31 @@ def activity_stream(context, stream_type, *args, **kwargs):
     return ''
 
 
+class DisplayFollowersUrl(Node):
+    def __init__(self, object):
+        self.object = Variable(object)
+
+    def render(self, context):
+        object_instance = self.object.resolve(context)
+        content_type = ContentType.objects.get_for_model(object_instance).pk
+        return reverse('actstream_followers', kwargs={
+            'content_type_id': content_type, 'object_id': object_instance.pk})
+
+
+def followers_url(parser, token):
+    bits = token.split_contents()
+    if len(bits) != 2:
+        raise TemplateSyntaxError("Accepted format "
+                                  "{% followers_url [object_instance] %}")
+    else:
+        return DisplayFollowersUrl(bits[1])
+
+
 register.filter(activity_stream)
 register.filter(is_following)
 register.tag(display_action)
 register.tag(follow_url)
 register.tag(follow_all_url)
 register.tag(actor_url)
+register.tag(followers_url)
 register.simple_tag(takes_context=True)(activity_stream)
